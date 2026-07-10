@@ -563,6 +563,10 @@ async function showProduct(product) {
         const response = await fetch(`/product/${encodeURIComponent(product)}`);
         const data = await response.json();
 
+        if (!response.ok || data.error || !(data.pitch || data.description)) {
+            throw new Error(data.error || "Product not found");
+        }
+
         appendUserMessage(product);
         appendBotMessage(data.pitch || data.description);
 
@@ -580,6 +584,10 @@ async function showLearnMore(product) {
     try {
         const response = await fetch(`/product/${encodeURIComponent(product)}`);
         const data = await response.json();
+
+        if (!response.ok || data.error || !(data.details || data.description)) {
+            throw new Error(data.error || "Product not found");
+        }
 
         appendUserMessage("Learn More");
         appendBotMessage(data.details || data.description);

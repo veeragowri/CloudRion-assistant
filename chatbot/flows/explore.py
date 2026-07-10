@@ -70,4 +70,6 @@ def get_explore_intro():
 
 
 def get_product_details(product):
-    return PRODUCTS.get(product, {})
+    if not product:
+        return None
+    return PRODUCTS.get(product) or PRODUCTS.get(product.strip())

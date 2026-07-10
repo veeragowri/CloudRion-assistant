@@ -1,3 +1,5 @@
+from urllib.parse import unquote
+
 from chatbot.config import CONTACT_INFO
 from chatbot.conversation import WELCOME_MESSAGE, QUICK_ACTIONS
 from chatbot.ticket_service import save_ticket
@@ -64,11 +66,13 @@ def products():
     })
 
 
-@app.route("/product/<product_name>")
+@app.route("/product/<path:product_name>")
 def product_details(product_name):
-    product = get_product_details(product_name)
+    # Vercel may pass the path still URL-encoded (e.g. CloudRion%20CRM)
+    name = unquote(product_name).strip()
+    product = get_product_details(name)
     if not product:
-        return jsonify({"error": "Product not found"}), 404
+        return jsonify({"error": "Product not found", "name": name}), 404
     return jsonify(product)
 
 
