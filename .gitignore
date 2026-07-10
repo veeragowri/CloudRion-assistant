@@ -24,3 +24,5 @@ database/*.db
 # Logs
 *.log
 .gh-config/
+.vercel
+.env*
