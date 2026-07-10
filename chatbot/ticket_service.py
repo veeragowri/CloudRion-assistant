@@ -1,6 +1,5 @@
 import sqlite3
-
-DATABASE_NAME = "database/tickets.db"
+from database.database import DATABASE_NAME
 
 
 def save_ticket(name, company, email, phone, product, issue):

@@ -26,6 +26,12 @@ from chatbot.flows.contact_flow import (
 
 app = Flask(__name__)
 
+# Ensure SQLite tables exist (uses /tmp on Vercel when needed)
+try:
+    create_database()
+except Exception:
+    pass
+
 QUESTION_FOLLOW_UP = (
     "\n\nIf you'd like, I can arrange a personalized demo where our team "
     "can show how CloudRion fits your business requirements."

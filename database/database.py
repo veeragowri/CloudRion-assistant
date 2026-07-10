@@ -1,6 +1,13 @@
+import os
 import sqlite3
+from pathlib import Path
 
-DATABASE_NAME = "database/tickets.db"
+# On Vercel the filesystem is read-only except /tmp
+if os.environ.get("VERCEL"):
+    DATABASE_NAME = "/tmp/tickets.db"
+else:
+    Path("database").mkdir(exist_ok=True)
+    DATABASE_NAME = "database/tickets.db"
 
 
 def create_database():
