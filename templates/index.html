@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudRion AI Assistant</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<div class="chat-container">
+
+    <div class="chat-header">
+        <div class="header-logo-wrap">
+            <img src="/static/images/cloudrion-logo.png" alt="Cloudrion" class="header-logo">
+        </div>
+        <div class="header-text">
+            <span class="header-title">CloudRion AI Assistant</span>
+            <span class="header-tagline">Smart Software, Limitless Possibilities</span>
+        </div>
+    </div>
+
+    <div id="chat-box"></div>
+
+    <div class="input-area">
+        <input
+            type="text"
+            id="message"
+            placeholder="Type your message..."
+            autocomplete="off">
+
+        <button type="button" class="send-btn" onclick="sendMessage()" aria-label="Send message">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+        </button>
+    </div>
+
+</div>
+
+<!-- Book Demo Form -->
+<div id="demoModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeDemoForm()">&times;</span>
+        <img src="/static/images/cloudrion-logo.png" alt="Cloudrion" class="modal-logo">
+        <h2>📅 Book a Demo</h2>
+        <p class="modal-subtitle">Fill in your details and we'll schedule your personalized demo.</p>
+
+        <input type="text" id="demoName" placeholder="Full Name">
+        <input type="text" id="demoCompany" placeholder="Company Name">
+        <input type="email" id="demoEmail" placeholder="Email">
+        <input type="text" id="demoPhone" placeholder="Phone Number">
+
+        <select id="demoProduct">
+            <option value="">Select Product of Interest</option>
+            <option>CloudRion CRM</option>
+            <option>CloudRion ERP</option>
+            <option>CloudRion HRMS</option>
+            <option>CloudRion Billing</option>
+        </select>
+
+        <div class="form-row">
+            <input type="date" id="demoDate">
+            <input type="time" id="demoTime">
+        </div>
+
+        <button onclick="submitDemoForm()">Book Demo</button>
+    </div>
+</div>
+
+<!-- Raise Ticket Form -->
+<div id="ticketModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeTicketForm()">&times;</span>
+        <img src="/static/images/cloudrion-logo.png" alt="Cloudrion" class="modal-logo">
+        <h2>🎫 Raise Support Ticket</h2>
+        <p class="modal-subtitle">Describe your issue and our technical team will get back to you.</p>
+
+        <input type="text" id="ticketName" placeholder="Full Name">
+        <input type="text" id="ticketCompany" placeholder="Company Name">
+        <input type="email" id="ticketEmail" placeholder="Email">
+        <input type="text" id="ticketPhone" placeholder="Phone Number">
+
+        <select id="ticketProduct">
+            <option value="">Select CloudRion Product</option>
+            <option>CloudRion CRM</option>
+            <option>CloudRion ERP</option>
+            <option>CloudRion HRMS</option>
+            <option>CloudRion Billing</option>
+        </select>
+
+        <textarea id="ticketIssue" placeholder="Describe your issue"></textarea>
+
+        <button onclick="submitTicketForm()">Submit Ticket</button>
+    </div>
+</div>
+
+<script src="/static/script.js"></script>
+
+</body>
+</html>
