@@ -1,5 +1,4 @@
 import re
-from chatbot.contact_service import save_contact
 
 contact_sessions = {}
 
@@ -68,23 +67,12 @@ def save_contact_answer(user, answer):
         if len(answer.strip()) < 5:
             return "Please provide a brief message so our team can assist you."
 
-        contact_sessions[user]["message"] = answer.strip()
-        data = contact_sessions[user]
-
-        save_contact(
-            data["name"],
-            data["company"],
-            data["email"],
-            data["phone"],
-            data["message"],
-            data.get("product"),
-        )
-
         del contact_sessions[user]
 
+        # Contact inquiries are not persisted — only demo and ticket data are saved.
         return (
-            "Thank you! Your message has been sent to our team. "
-            "We will get back to you shortly."
+            "Thanks for reaching out. For now, please email support@cloudrion.com "
+            "or call +91 98765 43210 and our team will assist you."
         )
 
     return "Contact request completed."

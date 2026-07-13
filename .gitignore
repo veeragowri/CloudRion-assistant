@@ -26,3 +26,6 @@ database/*.db
 .gh-config/
 .vercel
 .env*
+
+# Large source asset (compressed launcher GIF is kept)
+static/images/bot-original.gif

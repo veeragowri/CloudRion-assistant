@@ -1,6 +1,5 @@
 import os
 from dotenv import load_dotenv
-from groq import Groq
 
 from chatbot.memory import conversation_history
 
@@ -18,6 +17,7 @@ def get_client():
                 "GROQ_API_KEY is not configured. "
                 "Add it in Vercel Project Settings → Environment Variables."
             )
+        from groq import Groq
         _client = Groq(api_key=api_key)
     return _client
 

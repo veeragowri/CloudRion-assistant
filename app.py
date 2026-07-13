@@ -124,18 +124,26 @@ def raise_ticket():
 
 @app.route("/book-demo", methods=["POST"])
 def book_demo():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
+
+    required = ["name", "company", "email", "phone", "product", "preferred_datetime"]
+    missing = [field for field in required if not str(data.get(field, "")).strip()]
+    if missing:
+        return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
 
     from chatbot.demo_service import save_demo
 
-    save_demo(
-        data["name"],
-        data["company"],
-        data["email"],
-        data["phone"],
-        data["product"],
-        data["preferred_datetime"],
-    )
+    try:
+        save_demo(
+            data["name"].strip(),
+            data["company"].strip(),
+            data["email"].strip(),
+            data["phone"].strip(),
+            data["product"].strip(),
+            data["preferred_datetime"].strip(),
+        )
+    except Exception:
+        return jsonify({"error": "Could not save demo request"}), 500
 
     return jsonify({
         "message": (
@@ -229,4 +237,5 @@ def contact_flow():
 
 if __name__ == "__main__":
     create_database()
-    app.run(debug=True)
+    # Port 5000 is often used by macOS AirPlay Receiver
+    app.run(debug=True, host="127.0.0.1", port=5001)

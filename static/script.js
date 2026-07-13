@@ -10,7 +10,11 @@ let selectedProduct = "";
 
 const chatBox = document.getElementById("chat-box");
 
-const BOT_AVATAR = `<div class="bot-avatar" aria-hidden="true"><img src="/static/images/cloudrion-logo.png" alt="" class="bot-avatar-img"></div>`;
+const BOT_AVATAR = `
+    <div class="bot-avatar" aria-hidden="true">
+        <img src="/static/images/cloudrion-c-logo.png?v=circle3" alt="" class="brand-mark brand-mark--avatar">
+    </div>
+`;
 const AVATAR_SPACER = `<div class="bot-avatar-spacer" aria-hidden="true"></div>`;
 
 function resetFlowModes() {
@@ -112,7 +116,7 @@ function handleButtonAction(action) {
             }
             break;
         case "contact_sales":
-            startContactFlow(selectedProduct || null);
+            showContactInfo(selectedProduct || null);
             break;
     }
 }
@@ -149,8 +153,7 @@ function handleFlowResponse(data) {
 function isCompletionMessage(text) {
     return (
         text.includes("Thank you! Our team will contact you shortly to schedule your") ||
-        text.includes("Your support request has been forwarded") ||
-        text.includes("Your message has been sent to our team")
+        text.includes("Your support request has been forwarded")
     );
 }
 
@@ -225,7 +228,7 @@ function handleAction(action) {
             break;
 
         case "📞 Contact Our Team":
-            startContactFlow();
+            showContactInfo();
             break;
     }
 }
@@ -262,29 +265,45 @@ function showSupportOptions() {
 
 // ---------------- Self-Service Forms ----------------
 
+function setFormError(id, message) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (message) {
+        el.textContent = message;
+        el.hidden = false;
+    } else {
+        el.textContent = "";
+        el.hidden = true;
+    }
+}
+
 function openDemoForm() {
     const productSelect = document.getElementById("demoProduct");
     if (selectedProduct) {
         productSelect.value = selectedProduct;
     }
-    document.getElementById("demoModal").style.display = "block";
+    setFormError("demoFormError", "");
+    const modal = document.getElementById("demoModal");
+    modal.hidden = false;
+    modal.style.display = "flex";
 }
 
 function closeDemoForm() {
-    document.getElementById("demoModal").style.display = "none";
+    const modal = document.getElementById("demoModal");
+    modal.hidden = true;
+    modal.style.display = "none";
+    setFormError("demoFormError", "");
 }
 
 function clearDemoForm() {
-    document.getElementById("demoName").value = "";
-    document.getElementById("demoCompany").value = "";
-    document.getElementById("demoEmail").value = "";
-    document.getElementById("demoPhone").value = "";
-    document.getElementById("demoProduct").value = "";
-    document.getElementById("demoDate").value = "";
-    document.getElementById("demoTime").value = "";
+    const form = document.getElementById("demoForm");
+    if (form) form.reset();
+    setFormError("demoFormError", "");
 }
 
-async function submitDemoForm() {
+async function submitDemoForm(event) {
+    if (event) event.preventDefault();
+
     const name = document.getElementById("demoName").value.trim();
     const company = document.getElementById("demoCompany").value.trim();
     const email = document.getElementById("demoEmail").value.trim();
@@ -292,13 +311,23 @@ async function submitDemoForm() {
     const product = document.getElementById("demoProduct").value;
     const date = document.getElementById("demoDate").value;
     const time = document.getElementById("demoTime").value;
+    const submitBtn = document.getElementById("demoSubmitBtn");
 
     if (!name || !company || !email || !phone || !product || !date || !time) {
-        alert("Please fill in all fields.");
-        return;
+        setFormError("demoFormError", "Please fill in all fields before booking.");
+        return false;
     }
 
-    const preferredDatetime = `${date} ${time}`;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setFormError("demoFormError", "Please enter a valid email address.");
+        return false;
+    }
+
+    setFormError("demoFormError", "");
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Booking...";
+    }
 
     try {
         const response = await fetch("/book-demo", {
@@ -310,23 +339,33 @@ async function submitDemoForm() {
                 email,
                 phone,
                 product,
-                preferred_datetime: preferredDatetime,
+                preferred_datetime: `${date} ${time}`,
             }),
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.error || "Booking failed");
+        }
+
         closeDemoForm();
         clearDemoForm();
 
         flowCompleted = true;
         resetFlowModes();
-        appendBotMessage(data.message);
+        appendBotMessage(data.message || "Demo booked successfully.");
         appendServiceButtons(`
-            <button onclick="location.reload()">🔄 Start New Conversation</button>
+            <button type="button" onclick="location.reload()">🔄 Start New Conversation</button>
         `);
     } catch (error) {
-        alert("Failed to book demo. Please try again.");
+        setFormError("demoFormError", "Failed to book demo. Please try again.");
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Book Demo";
+        }
     }
+    return false;
 }
 
 function openTicketForm() {
@@ -334,33 +373,50 @@ function openTicketForm() {
     if (selectedProduct) {
         productSelect.value = selectedProduct;
     }
-    document.getElementById("ticketModal").style.display = "block";
+    setFormError("ticketFormError", "");
+    const modal = document.getElementById("ticketModal");
+    modal.hidden = false;
+    modal.style.display = "flex";
 }
 
 function closeTicketForm() {
-    document.getElementById("ticketModal").style.display = "none";
+    const modal = document.getElementById("ticketModal");
+    modal.hidden = true;
+    modal.style.display = "none";
+    setFormError("ticketFormError", "");
 }
 
 function clearTicketForm() {
-    document.getElementById("ticketName").value = "";
-    document.getElementById("ticketCompany").value = "";
-    document.getElementById("ticketEmail").value = "";
-    document.getElementById("ticketPhone").value = "";
-    document.getElementById("ticketProduct").value = "";
-    document.getElementById("ticketIssue").value = "";
+    const form = document.getElementById("ticketForm");
+    if (form) form.reset();
+    setFormError("ticketFormError", "");
 }
 
-async function submitTicketForm() {
+async function submitTicketForm(event) {
+    if (event) event.preventDefault();
+
     const name = document.getElementById("ticketName").value.trim();
     const company = document.getElementById("ticketCompany").value.trim();
     const email = document.getElementById("ticketEmail").value.trim();
     const phone = document.getElementById("ticketPhone").value.trim();
     const product = document.getElementById("ticketProduct").value;
     const issue = document.getElementById("ticketIssue").value.trim();
+    const submitBtn = document.getElementById("ticketSubmitBtn");
 
     if (!name || !company || !email || !phone || !product || !issue) {
-        alert("Please fill in all fields.");
-        return;
+        setFormError("ticketFormError", "Please fill in all fields before submitting.");
+        return false;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setFormError("ticketFormError", "Please enter a valid email address.");
+        return false;
+    }
+
+    setFormError("ticketFormError", "");
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Submitting...";
     }
 
     try {
@@ -377,19 +433,29 @@ async function submitTicketForm() {
             }),
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.error || "Ticket failed");
+        }
+
         closeTicketForm();
         clearTicketForm();
 
         flowCompleted = true;
         resetFlowModes();
-        appendBotMessage(data.message);
+        appendBotMessage(data.message || "Ticket submitted successfully.");
         appendServiceButtons(`
-            <button onclick="location.reload()">🔄 Start New Conversation</button>
+            <button type="button" onclick="location.reload()">🔄 Start New Conversation</button>
         `);
     } catch (error) {
-        alert("Failed to submit ticket. Please try again.");
+        setFormError("ticketFormError", "Failed to submit ticket. Please try again.");
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit Ticket";
+        }
     }
+    return false;
 }
 
 // ---------------- Support Flow ----------------
@@ -419,13 +485,12 @@ async function startSupportFlow() {
     }
 }
 
-// ---------------- Contact Flow ----------------
+// ---------------- Contact (info only — not saved) ----------------
 
-async function startContactFlow(product = null) {
+async function showContactInfo(product = null) {
     selectedService = "contact";
     resetFlowModes();
-    contactMode = true;
-    flowCompleted = false;
+    contactMode = false;
 
     if (product) {
         selectedProduct = product;
@@ -434,22 +499,39 @@ async function startContactFlow(product = null) {
         appendUserMessage("📞 Contact Our Team");
     }
 
-    showTyping();
-
     try {
-        const response = await fetch("/contact-flow", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: "", start: true, product }),
-        });
-
+        const response = await fetch("/contact");
         const data = await response.json();
-        hideTyping();
-        handleFlowResponse(data);
+        const extra = product
+            ? `\n\nYou're interested in **${product}**. Reach out and our team will help you further.`
+            : "";
+        appendBotMessage((data.message || "") + extra);
     } catch (error) {
-        hideTyping();
-        appendBotMessage("Sorry, I couldn't start the contact flow. Please try again.");
-        contactMode = false;
+        appendBotMessage("Sorry, contact information is unavailable right now. Please try again later.");
+    }
+}
+
+function closeChat() {
+    const widget = document.getElementById("chat-widget");
+    const launcher = document.getElementById("chat-launcher");
+    if (widget) {
+        widget.classList.add("is-hidden");
+    }
+    if (launcher) {
+        launcher.hidden = false;
+    }
+    closeDemoForm();
+    closeTicketForm();
+}
+
+function openChat() {
+    const widget = document.getElementById("chat-widget");
+    const launcher = document.getElementById("chat-launcher");
+    if (widget) {
+        widget.classList.remove("is-hidden");
+    }
+    if (launcher) {
+        launcher.hidden = true;
     }
 }
 
@@ -573,7 +655,7 @@ async function showProduct(product) {
         appendServiceButtons(`
             <button onclick="selectedProduct='${product}'; handleButtonAction('learn_more')">Learn More</button>
             <button onclick="showDemoOptions('${product}')">Book Demo</button>
-            <button onclick="startContactFlow('${product}')">Contact Sales</button>
+            <button onclick="showContactInfo('${product}')">Contact Sales</button>
         `);
     } catch (error) {
         appendBotMessage("Sorry, I couldn't load product details. Please try again.");
@@ -594,7 +676,7 @@ async function showLearnMore(product) {
 
         appendServiceButtons(`
             <button onclick="showDemoOptions('${product}')">Book Demo</button>
-            <button onclick="startContactFlow('${product}')">Contact Sales</button>
+            <button onclick="showContactInfo('${product}')">Contact Sales</button>
         `);
     } catch (error) {
         appendBotMessage("Sorry, I couldn't load more details. Please try again.");
@@ -639,3 +721,6 @@ window.addEventListener("click", function (event) {
         closeTicketForm();
     }
 });
+
+document.getElementById("demoForm")?.addEventListener("submit", submitDemoForm);
+document.getElementById("ticketForm")?.addEventListener("submit", submitTicketForm);
